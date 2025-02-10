@@ -42,6 +42,8 @@ xianJiTimes = int(data[6])
 defaultTimes = 80  # 次数
 maxDiff = 42
 pyautogui.FAILSAFE = False
+# 定义一个全局变量作为停止标志
+stop_flag = False
 
 kkPic = "kk.png"
 kkPlatIconPic = "kkPlatIcon.png"
@@ -761,38 +763,51 @@ def start_countdown():
     timeLabel.config(text="剩余时间", state=tk.DISABLED)
 
 def beginGame():
-    isweihu = weiHuI.get()
-    count = defaultTimes
-    if isweihu:
-        count = int(entryWeiHu.get())
-    run_log_print(message='开始游戏了')
-    notFindPlat = 5
-    for i in range(0, count):
-        result = checkWnd('KK官方对战平台')
-        if result:
-            findwait = findButton(atwait, True)
-            if findwait:
-                run_log_print(message=f'找到活动弹框')
-            run_log_print(message=f'正在进行第{i + 1}次游戏')
-            label3.config(text=f"正在循环：{i + 1}次", state=tk.DISABLED)
-            building()
-            start_countdown()
-            time.sleep(2)
-            run_log_print(message=f'进行下一把 {i + 2}')
-        else:
-            run_log_print(message='没有找到平台')
-            openPlatCreateRoom()
-            notFindPlat = notFindPlat - 1
-            if notFindPlat == 0:
-                print(f"not find plat")
-                break
-    closeWnd()
-    print(f"python end")
+    run_log_print(message='开始按钮')
+    global stop_flag
+    while not stop_flag:
+        # 这里是 beginGame 函数的主要逻辑
+        isweihu = weiHuI.get()
+        count = defaultTimes
+        if isweihu:
+            count = int(entryWeiHu.get())
+        run_log_print(message='开始游戏了')
+        notFindPlat = 5
+        for i in range(0, count):
+            result = checkWnd('KK官方对战平台')
+            if result:
+                findwait = findButton(atwait, True)
+                if findwait:
+                    run_log_print(message=f'找到活动弹框')
+                run_log_print(message=f'正在进行第{i + 1}次游戏')
+                label3.config(text=f"正在循环：{i + 1}次", state=tk.DISABLED)
+                building()
+                start_countdown()
+                time.sleep(2)
+                run_log_print(message=f'进行下一把 {i + 2}')
+            else:
+                run_log_print(message='没有找到平台')
+                openPlatCreateRoom()
+                notFindPlat = notFindPlat - 1
+                if notFindPlat == 0:
+                    print(f"not find plat")
+                    break
+        closeWnd()
+        print(f"python end")
+        pass
+    
 
 def start_thread():
+    global stop_flag
+    stop_flag = False  # 重置停止标志
     thread = threading.Thread(target=beginGame)
     thread.daemon = True
     thread.start()
+
+def stop_thread():
+    run_log_print(message='停止按钮')
+    global stop_flag
+    stop_flag = True  # 设置停止标志
 
 def eventReduce():
     count = int(entryN.get())
@@ -859,10 +874,12 @@ if __name__ == '__main__':
     row += 1
     button = tk.Button(grid_frame, text="开始", command=start_thread)
     button.grid(row=row, column=0, sticky=W)
+    button_stop = tk.Button(grid_frame, text="停止", command=stop_thread)
+    button_stop.grid(row=row, column=1, sticky=W)
     button1 = tk.Button(grid_frame, text="鼠标坐标", command=mousePos)
-    button1.grid(row=row, column=1,  sticky=W)
+    button1.grid(row=row, column=2,  sticky=W)
     button2 = tk.Button(grid_frame, text="测试", command=test)
-    button2.grid(row=row, column=2, sticky=W)
+    button2.grid(row=row, column=3, sticky=W)
 
     row += 1
     autoBmI = tk.BooleanVar()
