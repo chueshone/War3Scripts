@@ -1,0 +1,2 @@
+pyinstaller -F -w main.py 不带黑框
+pyinstaller -F main.py 带黑框
